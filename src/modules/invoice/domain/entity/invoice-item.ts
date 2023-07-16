@@ -12,18 +12,18 @@ type InvoiceItemProps = {
 
 export default class InvoiceItem extends BaseEntity {
     private _productId: string;
-    private _invoice_id: string;
+    private _invoiceId: string;
     private _quantity: number;
 
     constructor(props: InvoiceItemProps) {
         super(props.id, props.createdAt, props.updatedAt);
-        this._invoice_id = props.invoiceId;
+        this._invoiceId = props.invoiceId;
         this._productId = props.productId;
         this._quantity = props.quantity;
     }
 
     get invoiceId(): string {
-        return this._invoice_id;
+        return this._invoiceId;
     }
 
     get productId(): string {

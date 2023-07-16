@@ -1,6 +1,6 @@
 import InvoiceGateway from "../../gateway/invoice.gateway";
-import ProductGateway from "../../gateway/product.gateway";
-import InvoiceItemGateway from "../../gateway/invoice-item.gateway";
+import ProductInterface from "../../repository/product.interface";
+import InvoiceItemInterface from "../../repository/invoice-item.interface";
 import UseCaseInterface from "../../../@shared/usecase/use-case.interface";
 import { GenerateInvoiceUseCaseInputDto, GenerateInvoiceUseCaseOutputDto } from "./generate-invoice.dto";
 import Invoice from "../../domain/entity/invoice";
@@ -10,15 +10,15 @@ import Id from "../../../@shared/domain/value-object/id.value-object";
 import InvoiceItem from "../../domain/entity/invoice-item";
 
 export interface GenerateInvoiceProps {
-    invoiceItemRepository: InvoiceItemGateway;
+    invoiceItemRepository: InvoiceItemInterface;
     invoiceRepository: InvoiceGateway;
-    productRepository: ProductGateway;
+    productRepository: ProductInterface;
 }
 
-export class GenerateInvoice implements UseCaseInterface{
-    private _invoiceItemRepository: InvoiceItemGateway;
+export class GenerateInvoiceUseCase implements UseCaseInterface{
+    private _invoiceItemRepository: InvoiceItemInterface;
     private _invoiceRepository: InvoiceGateway;
-    private _productRepository: ProductGateway;
+    private _productRepository: ProductInterface;
 
     constructor(props: GenerateInvoiceProps) {
         this._invoiceItemRepository = props.invoiceItemRepository;
@@ -51,6 +51,12 @@ export class GenerateInvoice implements UseCaseInterface{
             total: 0
         });
 
+        await Promise.all(
+            productList.map(async ({ product }) => {
+                await this._productRepository.find(product.id.id);
+            }),
+        )
+
         let invoice = new Invoice({
             id: new Id(input.id),
             name: input.name,
@@ -73,20 +79,13 @@ export class GenerateInvoice implements UseCaseInterface{
 
             return new InvoiceItem({
                 invoiceId: invoice.id.id,
-                productId: product.id,
+                productId: product.id.id,
                 quantity,
             });
         });
 
         await this._invoiceRepository.generate(invoice);
         invoice = await this._invoiceRepository.find(invoice.id.id);
-
-        const productList2 = await Promise.all(
-            productList.map(async (item) => {
-                await this._productRepository.create(item.product);
-                return await this._productRepository.find(item.product.id);
-            })
-        );
 
         await invoiceItemList.forEach(async (item) => {
             await this._invoiceItemRepository.create(item);
@@ -102,7 +101,7 @@ export class GenerateInvoice implements UseCaseInterface{
             city: invoice.address.city,
             state: invoice.address.state,
             zipCode: invoice.address.zipCode,
-            items: productList2.map((product) => {
+            items: productList.map(({product}) => {
                 return {
                     id: product.id.id,
                     name: product.name,

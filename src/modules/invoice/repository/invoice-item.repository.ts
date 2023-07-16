@@ -1,9 +1,9 @@
 import Id from "../../@shared/domain/value-object/id.value-object";
 import InvoiceItem from "../domain/entity/invoice-item";
-import InvoiceItemGateway from "../gateway/invoice-item.gateway";
+import InvoiceItemInterface from "../repository/invoice-item.interface";
 import { InvoiceItemModel } from "./invoice-item.model";
 
-export default class InvoiceItemRepository implements InvoiceItemGateway {
+export default class InvoiceItemRepository implements InvoiceItemInterface {
     async create(invoiceItem: InvoiceItem): Promise<void> {
         await InvoiceItemModel.create({
             id: invoiceItem.id.id,
@@ -35,5 +35,25 @@ export default class InvoiceItemRepository implements InvoiceItemGateway {
                 updatedAt: item.updatedAt,
             })
         )
-    }    
+    }
+    async findById(id: string): Promise<InvoiceItem> {
+        const invoiceItem = await InvoiceItemModel.findOne({
+            where: {
+                invoice_id: id,
+            }
+        });
+
+        if (!invoiceItem) {
+            throw new Error("Invoice item not found");
+        }
+
+        return new InvoiceItem({
+            id: new Id(invoiceItem.id),
+            productId: invoiceItem.product_id,
+            invoiceId: invoiceItem.invoice_id,
+            quantity: invoiceItem.quantity,
+            createdAt: invoiceItem.createdAt,
+            updatedAt: invoiceItem.updatedAt,
+        });
+    }
 }

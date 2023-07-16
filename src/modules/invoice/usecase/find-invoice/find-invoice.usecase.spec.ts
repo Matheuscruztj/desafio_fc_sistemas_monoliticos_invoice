@@ -3,10 +3,10 @@ import Invoice from "../../domain/entity/invoice";
 import InvoiceItem from "../../domain/entity/invoice-item";
 import Product from "../../domain/entity/product";
 import Address from "../../domain/value-object/address";
-import InvoiceItemGateway from "../../gateway/invoice-item.gateway";
 import InvoiceGateway from "../../gateway/invoice.gateway";
-import ProductGateway from "../../gateway/product.gateway";
-import { FindInvoice } from "./find-invoice.usecase";
+import ProductInterface from "../../repository/product.interface";
+import InvoiceItemInterface from "../../repository/invoice-item.interface";
+import { FindInvoiceUseCase } from "./find-invoice.usecase";
 
 const inputFind = {
     id: "1"
@@ -105,7 +105,8 @@ const MockInvoiceItemRepository = () => {
     return {
         create: jest.fn(),
         findByInvoiceId: jest.fn()
-        .mockReturnValue(Promise.resolve(MockInvoiceItemList))
+        .mockReturnValue(Promise.resolve(MockInvoiceItemList)),
+        findById: jest.fn(),
     }
 }
 
@@ -119,15 +120,14 @@ const MockProductRepository = () => {
 }
 
 describe("Find Invoice Usecase unit test", () => {
-    let productRepository: ProductGateway;
+    let productRepository: ProductInterface;
     let invoiceRepository: InvoiceGateway;
-    let invoiceItemRepository: InvoiceItemGateway;
+    let invoiceItemRepository: InvoiceItemInterface;
 
     beforeEach(async () => {
         invoiceRepository = MockInvoiceRepository();
         productRepository = MockProductRepository();
         invoiceItemRepository = MockInvoiceItemRepository();
-
     });
     
     afterEach(() => {
@@ -137,7 +137,7 @@ describe("Find Invoice Usecase unit test", () => {
     it("should find an invoice", async () => {
         invoiceRepository.find = jest.fn().mockReturnValue(Promise.resolve(MockInvoice))
 
-        const usecase = new FindInvoice({
+        const usecase = new FindInvoiceUseCase({
             invoiceRepository,
             productRepository,
             invoiceItemRepository,
@@ -149,7 +149,7 @@ describe("Find Invoice Usecase unit test", () => {
     });
 
     it("should not find an invoice", async () => {
-        const usecase = new FindInvoice({
+        const usecase = new FindInvoiceUseCase({
             invoiceRepository,
             productRepository,
             invoiceItemRepository,

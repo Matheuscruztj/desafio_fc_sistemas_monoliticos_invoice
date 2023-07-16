@@ -1,19 +1,19 @@
 import UseCaseInterface from "../../../@shared/usecase/use-case.interface";
-import InvoiceItemGateway from "../../gateway/invoice-item.gateway";
 import InvoiceGateway from "../../gateway/invoice.gateway";
-import ProductGateway from "../../gateway/product.gateway";
+import ProductInterface from "../../repository/product.interface";
+import InvoiceItemInterface from "../../repository/invoice-item.interface";
 import { FindInvoiceUseCaseInputDTO, FindInvoiceUseCaseOutputDTO } from "./find-invoice.dto";
 
 export interface FindInvoiceProps {
-    invoiceItemRepository: InvoiceItemGateway;
+    invoiceItemRepository: InvoiceItemInterface;
     invoiceRepository: InvoiceGateway;
-    productRepository: ProductGateway;
+    productRepository: ProductInterface;
 }
 
-export class FindInvoice implements UseCaseInterface {
-    private _invoiceItemRepository: InvoiceItemGateway;
+export class FindInvoiceUseCase implements UseCaseInterface {
+    private _invoiceItemRepository: InvoiceItemInterface;
     private _invoiceRepository: InvoiceGateway;
-    private _productRepository: ProductGateway;
+    private _productRepository: ProductInterface;
 
     constructor(props: FindInvoiceProps) {
         this._invoiceItemRepository = props.invoiceItemRepository;
